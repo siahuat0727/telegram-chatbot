@@ -31,8 +31,7 @@ machine = TocMachine(
         'state_initial',
         'state_news',
         'state_register',
-        'state_favourite',
-        'state2'
+        'state_favourite'
     ],
     transitions=[
         {
@@ -47,15 +46,14 @@ machine = TocMachine(
             'dest': 'state_register',
         },
         {
+            'trigger': 'to_favourite',
+            'source': 'state_initial',
+            'dest': 'state_favourite',
+        },
+        {
             'trigger': 'to_news',
             'source': 'state_initial',
             'dest': 'state_news',
-        },
-        {
-            'trigger': 'advance',
-            'source': 'state_initial',
-            'dest': 'state2',
-            'conditions': 'is_going_to_state2'
         },
         {
             'trigger': 'select_favourite',
@@ -68,17 +66,11 @@ machine = TocMachine(
             'dest': 'state_news',
         },
         {
-            'trigger': 'advance',
-            'source': 'state_news',
-            'dest': 'state2',
-        },
-        {
             'trigger': 'go_back',
             'source': [
                 'state_news',
                 'state_register',
                 'state_favourite',
-                'state2'
             ],
             'dest': 'state_initial'
             # 'conditions' : 'leaving_state'
@@ -99,14 +91,19 @@ def _set_webhook():
 
 
 def state_initial_handler(update):
+    if update.message == None:
+        return
     chat_id = str(update.message.chat_id)
+    bot.send_message(chat_id=chat_id, text="type:\n'news' to explore news\n'favorite' to let me know your favorite")
     if update.message.text == 'news':
         if db.exist(chat_id):
-            update.message.reply_text('found chat_id')
+            scrape(chat_id)
             machine.to_news(update)
         else:
-            update.message.reply_text('first time found ' + chat_id +' set username')
+            update.message.reply_text('found that you haven't used me before, please register your nickname')
             machine.to_register(update)
+    elif update.message.text == 'favorite':
+        machine.to_favourite(update)
     else:
         update.message.reply_text('try again')
 
@@ -121,13 +118,13 @@ def state_news_handler(update):
         if get_text(update) == 'exit':
             machine.go_back(update)
             return
-        print('got message')
-        scrape(update)
+        scrape(update.message.chat_id)
     elif update.callback_query != None:
         if update.callback_query.data == 'more':
-            scrape(update.callback_query.chat_id)
+            scrape(update.callback_query.message.chat.id)
 
 def scrape(chat_id):
+    bot.send_message(chat_id=chat_id, text="finding most suitable news for you...")
     base_url = "https://tw.news.yahoo.com/"
     total = 0
     dicts = {}
@@ -157,17 +154,18 @@ def scrape(chat_id):
     ]
     button_list.append([InlineKeyboardButton('more', callback_data='more')])
     reply_markup = InlineKeyboardMarkup(button_list)
-    bot.send_message(chat_id=update.message.chat_id, text="hehe", reply_markup=reply_markup)
+    bot.send_message(chat_id=chat_id, text="^.^", reply_markup=reply_markup)
 
 def state_favourite_handler(update):
     text = get_text(update)
     if text in all_kinds:
-        update.message.reply_text('probability of ' + text + ' is added')
-        db.update(get_chat_id(update), get_text(update), 2)
+        update.message.reply_text(text + '++ ~')
+        db.update(get_chat_id(update), get_text(update), 1)
     elif get_text(update) == 'finish':
+        scrape(update.message.chat_id)
         machine.to_news(update)
     else:
-        update.message.reply_text('please choose from keyboard button below')
+        update.message.reply_text('please choose from keyboard button below only')
     return
 
 @app.route('/hook', methods=['POST'])
@@ -176,7 +174,7 @@ def webhook_handler():
     # print(update.message.from_user.username)
     if update.message != None:
         text = update.message.text
-        update.message.reply_text('got it ' + text)
+        update.message.reply_text('received ' + text)
     globals()[machine.state + '_handler'](update)
     return 'ok'
 

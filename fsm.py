@@ -17,34 +17,25 @@ class TocMachine(GraphMachine):
         self.first_use(update)
 
     def on_enter_state_news(self, update):
-        update.message.reply_text("I'm entering state_news")
-        button_list = [
-                [InlineKeyboardButton('col', callback_data='callback__')]
-        ]
-        reply_markup = InlineKeyboardMarkup(button_list)
-        self.bot.send_message(chat_id=update.message.chat_id, text="A two-column menu", reply_markup=reply_markup)
+        # update.message.reply_text("I'm entering state_news")
+        return
 
     def on_exit_state_news(self, update):
-        update.message.reply_text('Leaving state_news')
+        # update.message.reply_text('Leaving state_news')
+        return
 
     def is_going_to_state_register(self, update):
         text = update.message.text
         return self.state == 'user' and text.lower() == 'register'
 
     def on_enter_state_register(self, update):
-        update.message.reply_text("I'm entering state_register")
-
-        button_list=[
-            [
-                KeyboardButton('newws')
-            ]
-        ]
-        reply_markup = ReplyKeyboardMarkup(button_list)
-        self.bot.send_message(chat_id=update.message.chat_id, text="A two-column menu", reply_markup=reply_markup)
+        return
+        # update.message.reply_text("I'm entering state_register")
         # self.select_favourite(update)
 
     def on_exit_state_register(self, update):
-        update.message.reply_text('Leaving state_register')
+        return
+        # update.message.reply_text('Leaving state_register')
 
 
 
@@ -54,7 +45,7 @@ class TocMachine(GraphMachine):
         return self.state == 'register' and text.lower() == 'favourite'
 
     def on_enter_state_favourite(self, update):
-        update.message.reply_text("I'm entering state_favourite")
+        # update.message.reply_text("I'm entering state_favourite")
         button_list=[
             [KeyboardButton(s) for s in ['politics', 'finance', 'entertainment', 'sports', 'society', 'local', 'world', 'lifestyle', 'health', 'technology', 'travel', 'odd']]
         ]
@@ -62,18 +53,5 @@ class TocMachine(GraphMachine):
         self.bot.send_message(chat_id=update.message.chat_id, text="A two-column menu", reply_markup=reply_markup)
 
     def on_exit_state_favourite(self, update):
-        update.message.reply_text('Leaving state_favourite')
-
-
-
-
-    def is_going_to_state2(self, update):
-        text = update.message.text
-        return text.lower() == 'go to state2'
-
-    def on_enter_state2(self, update):
-        update.message.reply_text("I'm entering state2")
-        self.go_back(update)
-
-    def on_exit_state2(self, update):
-        update.message.reply_text('Leaving state2')
+        # update.message.reply_text('Leaving state_favourite')
+        return
