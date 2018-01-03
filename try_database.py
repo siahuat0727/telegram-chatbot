@@ -13,22 +13,32 @@ class Database:
         command =   """ CREATE TABLE user_data (
                         chat_id VARCHAR(30) UNIQUE,
                         username VARCHAR(30) NOT NULL,
-                        politics INT DEFAULT'0',
-                        finance INT DEFAULT'0',
-                        entertainment INT DEFAULT'0',
-                        sports INT DEFAULT'0',
-                        society INT DEFAULT'0',
-                        local INT DEFAULT'0',
-                        world INT DEFAULT'0',
-                        lifestyle INT DEFAULT'0',
-                        health INT DEFAULT'0',
-                        technology INT DEFAULT'0',
-                        travel INT DEFAULT'0',
-                        odd INT DEFAULT'0'
+                        politics INT DEFAULT'2',
+                        finance INT DEFAULT'2',
+                        entertainment INT DEFAULT'2',
+                        sports INT DEFAULT'2',
+                        society INT DEFAULT'2',
+                        local INT DEFAULT'2',
+                        world INT DEFAULT'2',
+                        lifestyle INT DEFAULT'2',
+                        health INT DEFAULT'2',
+                        technology INT DEFAULT'2',
+                        travel INT DEFAULT'2',
+                        odd INT DEFAULT'2'
                         ) """
         self.db.cursor().execute(command)
 
-    def select(self, select):
+    def select(self, chat_id, select):
+        cursor = self.db.cursor()
+        results=(())
+        try:
+            cursor.execute("SELECT %s FROM user_data WHERE chat_id = '%s'" % (select, chat_id))
+            results = cursor.fetchall()
+        except:
+            print('Error: unable to fetch data')
+        return results
+
+    def select_all(self, select):
         cursor = self.db.cursor()
         results=(())
         try:
@@ -36,16 +46,15 @@ class Database:
             results = cursor.fetchall()
         except:
             print('Error: unable to fetch data')
-        print(results)
         return results
 
     def update(self, chat_id, kind, inc=1):
-        command = "UPDATE user_data set %s = %s + %d WHERE %s = '%s'" % (kind, kind, inc, chat_id, chat_id)
+        command = "UPDATE user_data set %s = %s + %d WHERE chat_id = '%s'" % (kind, kind, inc, chat_id)
         print(command)
         self._exec(command)
 
     def exist(self, chat_id):
-        chat_ids = self.select('chat_id')
+        chat_ids = self.select_all('chat_id')
         for x in chat_ids:
             if x[0] == chat_id:
                 return True
@@ -57,13 +66,17 @@ class Database:
             self.db.commit()
         except:
             self.db.rollback()
-        self.close()
 
     def close(self):
         self.db.close()
 
 '''
 db = Database()
+db.update('316205244', 'politics', 3)
+all_kinds = ['politics', 'finance', 'entertainment', 'sports', 'society', 'local', 'world', 'lifestyle', 'health', 'technology', 'travel', 'odd']
+for x in all_kinds:
+    print(db.select('316205244', x))
+db.close()
 db.create()
 db.insert('12341234', 'lalala')
 print(db.select('*'))

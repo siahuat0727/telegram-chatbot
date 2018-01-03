@@ -7,6 +7,7 @@ from telegram.ext import Updater
 from flask import Flask, request, send_file
 from bs4 import BeautifulSoup
 from urllib.request import urlopen
+import random
 
 from telegram.ext import CommandHandler
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
@@ -117,32 +118,46 @@ def state_register_handler(update):
 
 def state_news_handler(update):
     if update.message != None:
+        if get_text(update) == 'exit':
+            machine.go_back(update)
+            return
         print('got message')
-        scrape(update, update.message.text)
+        scrape(update)
     elif update.callback_query != None:
-        print('callback_data')
-        print(update.callback_query.data)
+        if update.callback_query.data == 'more':
+            scrape(update.callback_query.chat_id)
 
-def scrape(update, kind):
+def scrape(chat_id):
     base_url = "https://tw.news.yahoo.com/"
-    url = base_url + kind
-    html = urlopen(url).read().decode('utf-8')
-    soup = BeautifulSoup(html, features='lxml')
-    links = soup.find_all("a", {"class": "D(ib) Ov(h) Whs(nw) C($c-fuji-grey-l) C($c-fuji-blue-1-c):h Td(n) Fz(16px) Tov(e) Fw(700)"})
-    for link in links:
-        print(link.get_text(), link['href'])
+    total = 0
+    dicts = {}
+    for kind in all_kinds:
+        n = db.select(chat_id, kind)
+        total += n[0][0]
+        dicts[kind] = n[0][0]
+    print(dicts)
+
+    mean = 8
+    links_to_show = []
+
+    for kind in all_kinds:
+        choose = 0
+        for i in range(mean):
+            if random.uniform(0, 1) < dicts[kind]:
+                choose += 1
+        if choose > 0:
+            url = base_url + kind
+            html = urlopen(url).read().decode('utf-8')
+            soup = BeautifulSoup(html, features='lxml')
+            links = soup.find_all("a", {"class": "D(ib) Ov(h) Whs(nw) C($c-fuji-grey-l) C($c-fuji-blue-1-c):h Td(n) Fz(16px) Tov(e) Fw(700)"})
+            links = [(link.get_text(), base_url + link['href']) for link in links]
+            links_to_show += random.sample(links, choose)
     button_list = [
-            [InlineKeyboardButton(link.get_text(), url=base_url+link['href'])] for link in links
+            [InlineKeyboardButton(t[0], url=t[1])] for t in links_to_show
     ]
+    button_list.append([InlineKeyboardButton('more', callback_data='more')])
     reply_markup = InlineKeyboardMarkup(button_list)
     bot.send_message(chat_id=update.message.chat_id, text="hehe", reply_markup=reply_markup)
-    '''
-    url = base_url + links[0]['href']
-    html = urlopen(url).read().decode('utf-8')
-    soup =  BeautifulSoup(html, features='lxml')
-    texts = soup.find_all("a", {'class': 'canvas-atom canvas-text Mb(1.0em) Mb(0)--sm Mt(0.8em)--sm'})
-    print(texts)
-    '''
 
 def state_favourite_handler(update):
     text = get_text(update)
