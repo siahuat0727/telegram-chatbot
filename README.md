@@ -5,8 +5,8 @@
 新聞來源：yahoo奇摩新聞
 
 使用了：
-InlineKeyboardButton
-KeyboardButton
-mysql
-BeautifulSoup4
+InlineKeyboardButton,
+KeyboardButton,
+mysql,
+BeautifulSoup4,
 讀取用戶id及username
