@@ -47,10 +47,10 @@ class TocMachine(GraphMachine):
     def on_enter_state_favourite(self, update):
         # update.message.reply_text("I'm entering state_favourite")
         button_list=[
-            [KeyboardButton(s) for s in ['politics', 'finance', 'entertainment', 'sports', 'society', 'local', 'world', 'lifestyle', 'health', 'technology', 'travel', 'odd']]
+            [KeyboardButton(s)] for s in ['politics', 'finance', 'entertainment', 'sports', 'society', 'local', 'world', 'lifestyle', 'health', 'technology', 'travel', 'odd', 'finish']
         ]
         reply_markup = ReplyKeyboardMarkup(button_list)
-        self.bot.send_message(chat_id=update.message.chat_id, text="A two-column menu", reply_markup=reply_markup)
+        self.bot.send_message(chat_id=update.message.chat_id, text="Please select the topic you interest in", reply_markup=reply_markup)
 
     def on_exit_state_favourite(self, update):
         # update.message.reply_text('Leaving state_favourite')

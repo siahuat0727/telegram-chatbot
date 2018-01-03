@@ -94,23 +94,24 @@ def state_initial_handler(update):
     if update.message == None:
         return
     chat_id = str(update.message.chat_id)
-    bot.send_message(chat_id=chat_id, text="type:\n'news' to explore news\n'favorite' to let me know your favorite")
     if update.message.text == 'news':
         if db.exist(chat_id):
             scrape(chat_id)
             machine.to_news(update)
         else:
-            update.message.reply_text('found that you haven't used me before, please register your nickname')
+            update.message.reply_text("found that you haven't used me before, please enter your nickname for registeration:")
             machine.to_register(update)
     elif update.message.text == 'favorite':
         machine.to_favourite(update)
     else:
-        update.message.reply_text('try again')
+        text = 'Hey! ' + update.message.from_user.username + "\ntype:\n'news' to explore news\n'favorite' to let me know your favorite"
+        bot.send_message(chat_id=chat_id, text=text)
 
 def state_register_handler(update):
     text = get_text(update)
     db.insert(update.message.chat_id, text)
-    update.message.reply_text('success set ' + text + ' as username')
+    reply = 'successfully set ' + text + ' as nickname'
+    update.message.reply_text(reply)
     machine.select_favourite(update)
 
 def state_news_handler(update):
@@ -140,7 +141,7 @@ def scrape(chat_id):
     for kind in all_kinds:
         choose = 0
         for i in range(mean):
-            if random.uniform(0, 1) < dicts[kind]:
+            if random.uniform(0, 1) < dicts[kind]/total:
                 choose += 1
         if choose > 0:
             url = base_url + kind
@@ -171,7 +172,6 @@ def state_favourite_handler(update):
 @app.route('/hook', methods=['POST'])
 def webhook_handler():
     update = telegram.Update.de_json(request.get_json(force=True), bot)
-    # print(update.message.from_user.username)
     if update.message != None:
         text = update.message.text
         update.message.reply_text('received ' + text)

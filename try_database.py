@@ -72,12 +72,9 @@ class Database:
 
 '''
 db = Database()
-db.update('316205244', 'politics', 3)
-all_kinds = ['politics', 'finance', 'entertainment', 'sports', 'society', 'local', 'world', 'lifestyle', 'health', 'technology', 'travel', 'odd']
-for x in all_kinds:
-    print(db.select('316205244', x))
+db.insert('43214321', 'qqqq')
+# db.update('316205244', 'finance', 3)
 db.close()
-db.create()
 db.insert('12341234', 'lalala')
 print(db.select('*'))
 db.update('lalala', "finance", 4)
