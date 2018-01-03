@@ -1,0 +1,2 @@
+sudo apt-get install -y libxml2-dev libxslt1-dev zlib1g-dev 
+sudo pip3 install lxml
